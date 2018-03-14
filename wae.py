@@ -330,6 +330,8 @@ class WAE(object):
             # c(x,y) = ||x - y||_1
             loss = tf.reduce_sum(tf.abs(real - reconstr), axis=[1, 2, 3])
             loss = 0.02 * tf.reduce_mean(loss)
+        elif costs.check_valid_smart_cost(opts['cost']):
+            loss = costs.construct_cost(opts, real, reconstr)
         else:
             assert False, 'Unknown cost function %s' % opts['cost']
         return loss
