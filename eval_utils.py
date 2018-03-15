@@ -15,7 +15,7 @@ from datahandler import DataHandler
 import scipy.linalg as la
 
 CELEBA_DIR ='/lustre/home/pruben/GitRepos/Forks/wae/celebA/datasets/celeba/img_align_celeba'
-CIFAR10_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/cifar10'
+CIFAR10_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/cifar10_local'
 DSPRITES_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/dsprites'
 GRASSLI_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/grassli'
 MNIST_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/mnist'
