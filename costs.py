@@ -6,6 +6,7 @@
 # Different additional losses for the WAE framework
 import tensorflow as tf
 import numpy as np
+import ops
 
 valid_smart_costs = ['patch_variances', 'l2sq', '_sylvain_recon_loss_using_disc_conv', '_sylvain_recon_loss_using_moments']
 
