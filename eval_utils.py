@@ -15,10 +15,10 @@ from datahandler import DataHandler
 import scipy.linalg as la
 
 CELEBA_DIR ='/lustre/home/pruben/GitRepos/Forks/wae/celebA/datasets/celeba/img_align_celeba'
-CIFAR10_DIR = '../cifar10'
-DSPRITES_DIR = '../dsprites'
-GRASSLI_DIR = '../grassli'
-MNIST_DIR = '../mnist'
+CIFAR10_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/cifar10'
+DSPRITES_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/dsprites'
+GRASSLI_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/grassli'
+MNIST_DIR = '/lustre/home/pruben/GitRepos/Forks/wae/mnist'
 INCEPTION_PATH = '/lustre/home/pruben/GitRepos/FID-scores/classify_image_graph_def.pb'
 
 def compute_metrics(tup, num_samples, work_dir, batch_size, recompute):
