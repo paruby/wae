@@ -30,7 +30,7 @@ parser.add_argument("--enc_noise",
                          " 'implicit': implicit encoder,"\
                          " 'add_noise': add noise before feeding "\
                          "to deterministic encoder")
-parser.add_argument("--cost",
+parser.add_argument("--cost", nargs='+',
                     help='Smart costs (enter as dictionary of tuples)')
 
 FLAGS = parser.parse_args()
@@ -71,7 +71,7 @@ def main():
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
     if FLAGS.cost is not None:
-        opts['cost'] = json.loads(FLAGS.cost)
+        opts['cost'] = json.loads(' '.join(FLAGS.cost))
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
