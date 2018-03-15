@@ -13,6 +13,9 @@ valid_smart_costs = ['patch_variances', 'l2sq', '_sylvain_recon_loss_using_disc_
 def flatten(tensor):
     return tf.reshape(tensor, [-1, prod_dim(tensor)])
 
+def prod_dim(tensor):
+    return np.prod([int(d) for d in tensor.get_shape()[1:]])
+
 def check_valid_smart_cost(costs_list):
     """Checks if smart cost options are valid.
     Valid costs are lists of 2-tuples giving component and weight.
