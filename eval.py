@@ -111,7 +111,7 @@ def main():
         random_ids = np.random.choice(data.num_points,
                                FLAGS.num_samples, replace=False)
         data_sample = data.data[random_ids]
-        random_test_ids = np.random.choice(data.test_data,
+        random_test_ids = np.random.choice(len(data.test_data),
                                FLAGS.num_samples, replace=False)
         data_test_sample = data.test_data[random_test_ids]
         if opts['input_normalize_sym']:
