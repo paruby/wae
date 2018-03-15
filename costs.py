@@ -7,7 +7,7 @@
 import tensorflow as tf
 import numpy as np
 
-valid_smart_costs = ['patch_variances']
+valid_smart_costs = ['patch_variances', 'l2sq', '_sylvain_recon_loss_using_disc_conv', '_sylvain_recon_loss_using_moments']
 
 def check_valid_smart_cost(costs_list):
     """Checks if smart cost options are valid.
