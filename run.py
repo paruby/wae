@@ -36,6 +36,14 @@ parser.add_argument("--patch_var_w", type=float,
                     help='weight of patch_var cost term')
 parser.add_argument("--l2sq_w", type=float,
                     help='weight of l2sq cost term')
+parser.add_argument("--sylvain_adv_c_w", type=float,
+                    help='weight of sylvains adv cost term')
+parser.add_argument("--sylvain_emb_c_w", type=float,
+                    help='weight of sylvains adv cost term')
+parser.add_argument("--adv_c_num_units", type=int,
+                    help='number of filters to use in adversarial cost')
+parser.add_argument("--adv_c_patches_size", type=int,
+                    help='size of filters to use in adversarial cost')
 
 FLAGS = parser.parse_args()
 
@@ -84,6 +92,10 @@ def main():
             opts['cost'].append(('patch_variances', FLAGS.patch_var_w))
         if FLAGS.l2sq_w is not None:
             opts['cost'].append(('l2sq', FLAGS.l2sq_w))
+        if FLAGS.sylvain_adv_c_w is not None and FLAGS.sylvain_emb_c_w is not None:
+            adv_c_w = FLAGS.sylvain_adv_c_w
+            emb_c_w = FLAGS.sylvain_emb_c_w
+            opts['cost'].append(('_sylvain_recon_loss_using_disc_conv', [adv_c_w, emb_c_w]))
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
