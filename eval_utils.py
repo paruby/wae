@@ -1,6 +1,6 @@
-# Parts computing square root of a pd matrix and computing FID scores taken from 
+# Parts computing square root of a pd matrix and computing FID scores taken from
 # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/gan/python/eval/python/classifier_metrics_impl.py
-# Parts manipulating Inception network taken from 
+# Parts manipulating Inception network taken from
 # https://github.com/bioinf-jku/TTUR
 
 import tensorflow as tf
@@ -38,53 +38,71 @@ def compute_metrics(tup, num_samples, work_dir, batch_size, recompute):
     # 3. Generating model samples and auto-encoding training samples
     samples_path = os.path.join(
         model_path, model_filename + '.samples' + str(num_samples) + '.npy')
-    reconstr_path = os.path.join(
-        model_path, model_filename + '.reconstr' + str(num_samples) + '.npy')
-    if os.path.exists(samples_path) and os.path.exists(reconstr_path) and recompute == 'no':
-        logging.error(' -- Samples and training reconstruction already available')
+    reconstr_path_train = os.path.join(
+        model_path, model_filename + '_train.reconstr' + str(num_samples) + '.npy')
+    reconstr_path_test = os.path.join(
+        model_path, model_filename + '_test.reconstr' + str(num_samples) + '.npy')
+    if os.path.exists(samples_path) and os.path.exists(reconstr_path_train) and os.path.exists(reconstr_path_test) and recompute == 'no':
+        logging.error(' -- Samples, training and test reconstruction already available')
         gen = np.load(samples_path)
-        train_reconstr = np.load(reconstr_path)
+        train_reconstr = np.load(reconstr_path_train)
+        test_reconstr = np.load(reconstr_path_test)
     else:
         logging.error(' -- Generating samples and training reconstructions')
         data = DataHandler(opts)
-        random_ids = np.random.choice(data.num_points,
+        random_ids_train = np.random.choice(data.num_points,
                                       num_samples, replace=False)
-        to_autoencode = data.data[random_ids]
-        gen, train_reconstr = run_model(
-            model_path, model_filename, num_samples, opts, to_autoencode, batch_size)
+        random_ids_test = np.random.choice(len(data.test_data),
+                                      num_samples, replace=False)
+        to_autoencode_train = data.data[random_ids_train]
+        to_autoencode_test = data.test_data[random_ids_test]
+        gen, train_reconstr, test_reconstr = run_model(
+            model_path, model_filename, num_samples, opts, to_autoencode_train, to_autoencode_test, batch_size)
         if type(gen) is not np.ndarray:
             return None
         if opts['input_normalize_sym']:
             gen = gen / 2. + 0.5
             train_reconstr = train_reconstr / 2. + 0.5
+            test_reconstr = test_reconstr / 2. + 0.5
         sample_sharp = compute_blurriness(gen[:min(500, num_samples)])
-        reconstr_sharp = compute_blurriness(
+        reconstr_sharp_train = compute_blurriness(
             train_reconstr[:min(500, num_samples)])
+        reconstr_sharp_test = compute_blurriness(
+            test_reconstr[:min(500, num_samples)])
         logging.error(' -- Samples sharpness = %f' % np.mean(sample_sharp))
-        logging.error(' -- Reconstruction sharpness = %f' % np.mean(reconstr_sharp))
+        logging.error(' -- Reconstruction sharpness (train) = %f' % np.mean(reconstr_sharp_train))
+        logging.error(' -- Reconstruction sharpness (test) = %f' % np.mean(reconstr_sharp_test))
         np.save(os.path.join(model_path, model_filename + '.samples' + \
                 str(num_samples) + '.npy'), gen)
-        np.save(os.path.join(model_path, model_filename + '.reconstr' + \
+        np.save(os.path.join(model_path, model_filename + 'train_.reconstr' + \
                 str(num_samples) + '.npy'), train_reconstr)
+        np.save(os.path.join(model_path, model_filename + 'test_.reconstr' + \
+                str(num_samples) + '.npy'), test_reconstr)
         np.savez(os.path.join(model_path, model_filename + '.sharp' + \
                  str(num_samples)),
                  sharp_gen=sample_sharp,
-                 sharp_reconstr=reconstr_sharp)
+                 sharp_reconstr_train=reconstr_sharp_train,
+                 sharp_reconstr_test=reconstr_sharp_test)
     # 4. Computing FID of generated samples
     logging.error(' -- Computing FID of generated samples')
     fid_gen = fid_using_samples((data_mu, data_cov), gen, batch_size)
     logging.error(' -- Computing FID of reconstructed training images')
-    fid_reconstr = fid_using_samples((data_mu, data_cov),
+    fid_reconstr_train = fid_using_samples((data_mu, data_cov),
                                      train_reconstr, batch_size)
+    logging.error(' -- Computing FID of reconstructed test images')
+    fid_reconstr_test = fid_using_samples((data_mu, data_cov),
+                                     test_reconstr, batch_size)
     if type(fid_gen) != tuple:
         return None
     np.savez(os.path.join(model_path, model_filename + '.fidstats' + \
             str(num_samples)),
             mu_gen=fid_gen[1],
             cov_gen=fid_gen[2],
-            mu_rec=fid_reconstr[1],
-            cov_rec=fid_reconstr[2])
-    return fid_gen[0], fid_reconstr[0]
+            mu_rec_train=fid_reconstr_train[1],
+            cov_rec_train=fid_reconstr_train[2],
+            mu_rec_test=fid_reconstr_test[1],
+            cov_rec_test=fid_reconstr_test[2])
+    return fid_gen[0], fid_reconstr_train[0], fid_reconstr_test[0]
 
 def model_details(param_filename, work_dir):
     with open(param_filename, 'r') as f:
@@ -120,7 +138,7 @@ def model_details(param_filename, work_dir):
         opts['data_dir'] = MNIST_DIR
     return opts
 
-def run_model(path, filename, num_samples, opts, to_reconstr, batch_size):
+def run_model(path, filename, num_samples, opts, to_reconstr_train, to_reconstr_test, batch_size):
     with tf.Session() as sess:
         with sess.graph.as_default():
             # try:
@@ -169,10 +187,10 @@ def run_model(path, filename, num_samples, opts, to_reconstr, batch_size):
                 gen.append(gen_batch)
             gen = np.vstack(gen)
 
-            # 2. Auto-encoding training pictures
-            reconstr = []
+            # 2a. Auto-encoding training pictures
+            reconstr_train = []
             for ibatch in xrange(num_samples / batch_size):
-                batch = to_reconstr[ibatch * batch_size : (ibatch + 1) * batch_size]
+                batch = to_reconstr_train[ibatch * batch_size : (ibatch + 1) * batch_size]
                 # try:
                 encoded_batch = sess.run(
                     encoder, feed_dict={real_points_ph: batch,
@@ -192,11 +210,37 @@ def run_model(path, filename, num_samples, opts, to_reconstr, batch_size):
                 # except:
                 #     logging.error(" -- Unexpected error:", sys.exc_info()[0])
                 #     return None
-                reconstr.append(reconstructed_batch)
-            reconstr = np.vstack(reconstr)
+                reconstr_train.append(reconstructed_batch)
+            reconstr_train = np.vstack(reconstr_train)
+
+            # 2b. Auto-encoding test pictures
+            reconstr_test = []
+            for ibatch in xrange(num_samples / batch_size):
+                batch = to_reconstr_test[ibatch * batch_size : (ibatch + 1) * batch_size]
+                # try:
+                encoded_batch = sess.run(
+                    encoder, feed_dict={real_points_ph: batch,
+                                        is_training_ph: False})
+                if encoder_log_sigma != None:
+                    # We have VAE, need to add the scaled noise
+                    batch_log_sigma = sess.run(
+                        encoder_log_sigma, feed_dict={real_points_ph: batch,
+                                                      is_training_ph: False})
+                    noise = z[ibatch * batch_size : (ibatch + 1) * batch_size]
+                    scaled_noise = np.multiply(np.exp(batch_log_sigma / 2.), noise)
+                    encoded_batch += scaled_noise
+
+                reconstructed_batch = sess.run(
+                    decoder, feed_dict={noise_ph: encoded_batch,
+                                        is_training_ph: False})
+                # except:
+                #     logging.error(" -- Unexpected error:", sys.exc_info()[0])
+                #     return None
+                reconstr_test.append(reconstructed_batch)
+            reconstr_test = np.vstack(reconstr_test)
 
     tf.reset_default_graph()
-    return gen, reconstr
+    return gen, reconstr_train, reconstr_test
 
 # code for handling inception net derived from
 #   https://github.com/openai/improved-gan/blob/master/inception_score/model.py
@@ -224,7 +268,7 @@ def compute_inception_stats(points, batch_size, _sess=None):
         sess = _sess
     else:
         sess = tf.Session()
-    # Safe to assume len(points) > batch_size and divisible bybatch_size 
+    # Safe to assume len(points) > batch_size and divisible bybatch_size
     path = INCEPTION_PATH
     with tf.gfile.FastGFile(path, 'rb') as f:
         graph_def = tf.GraphDef()

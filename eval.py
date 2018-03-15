@@ -111,13 +111,18 @@ def main():
         random_ids = np.random.choice(data.num_points,
                                FLAGS.num_samples, replace=False)
         data_sample = data.data[random_ids]
+        random_test_ids = np.random.choice(data.test_data,
+                               FLAGS.num_samples, replace=False)
+        data_test_sample = data.test_data[random_test_ids]
         if opts['input_normalize_sym']:
             data_sample = data_sample / 2. + 0.5
+            data_test_sample = data_test_sample / 2. + 0.5
         data_sharpness = compute_blurriness(
             data_sample[:min(500, FLAGS.num_samples)])
         np.save(os.path.join(data_path, dataset + '.sharp' + \
                 str(FLAGS.num_samples) + '.npy'), data_sharpness)
-        logging.error('Dataset sharpness = %f' % np.mean(data_sharpness))
+        logging.error('Data sharpness = %f' % np.mean(data_sharpness))
+
         mu, cov = compute_inception_stats(data_sample, FLAGS.batch_size)
         np.savez(stats_file, mu=mu, cov=cov)
 
@@ -137,16 +142,18 @@ def main():
             logging.error('Failed to process %s' % model)
             os.remove(os.path.join(tup[1], tup[2] + '.fid' + str(FLAGS.num_samples) + '.tmp'))
             continue
-        fid_gen, fid_reconstr = fid
+        fid_gen, fid_reconstr_train, fid_reconstr_test = fid
+        with open(os.path.join(tup[1], tup[2] + '.fid' + str(FLAGS.num_samples) + '.txt'), 'a') as f:
+            f.write('samples FID=%f, train reconstruction FID=%f, test reconstruction FID=%f, computed using %d samples' % \
+                    (fid_gen, fid_reconstr_train, fid_reconstr_test, FLAGS.num_samples))
         with open(os.path.join(tup[1], tup[2] + '.fid' + str(FLAGS.num_samples) + '.val'), 'w') as f:
-            f.write('samples FID=%f, reconstruction FID=%f, computed using %d samples' % \
-                    (fid_gen, fid_reconstr, FLAGS.num_samples))
-            logging.error('samples FID=%f, reconstruction FID=%f, computed using %d samples' % \
-                    (fid_gen, fid_reconstr, FLAGS.num_samples))
-        models_fid[tup[0]] = (fid_gen, fid_reconstr)
+            f.write('samples FID=%f, train reconstruction FID=%f, test reconstruction FID=%f, computed using %d samples' % \
+                    (fid_gen, fid_reconstr_train, fid_reconstr_test, FLAGS.num_samples))
+            logging.error('samples FID=%f, train reconstruction FID=%f, test reconstruction FID=%f, computed using %d samples' % \
+                    (fid_gen, fid_reconstr_train, fid_reconstr_test, FLAGS.num_samples))
+        models_fid[tup[0]] = (fid_gen, fid_reconstr_train, fid_reconstr_test)
         os.remove(os.path.join(tup[1], tup[2] + '.fid' + str(FLAGS.num_samples) + '.tmp'))
 
     logging.error(models_fid)
 
 main()
-
