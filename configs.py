@@ -265,3 +265,56 @@ config_celebA_sylvain_adv['z_dim'] = 100
 config_celebA_sylvain_adv['lambda'] = 0.0
 config_celebA_sylvain_adv['diag_p_w'] = 0.0
 config_celebA_sylvain_adv['cross_p_w'] = 0.0
+
+
+# cifar basic config
+config_cifar = {}
+config_cifar['dataset'] = 'cifar10'
+config_cifar['verbose'] = True
+config_cifar['save_every_epoch'] = 20
+config_cifar['print_every'] = 500
+config_cifar['work_dir'] = 'experiments/results_cifar10'
+config_cifar['plot_num_pics'] = 30
+config_cifar['plot_num_cols'] = 5
+
+config_cifar['input_normalize_sym'] = True
+config_cifar['data_augm'] = True
+config_cifar['data_dir'] = 'celebA/datasets/cifar10'
+
+config_cifar['optimizer'] = 'adam' # adam, sgd
+config_cifar['adam_beta1'] = 0.5
+config_cifar['lr'] = 0.003 #0.001 for WAE-MMD and 0.0003 for WAE-GAN
+config_cifar['lr_adv'] = 0.001
+config_cifar['lr_schedule'] = 'manual_smooth' #manual, plateau, or a number
+config_cifar['batch_size'] = 100
+config_cifar['epoch_num'] = 50
+config_cifar['init_std'] = 0.0099999
+config_cifar['init_bias'] = 0.0
+config_cifar['batch_norm'] = True
+config_cifar['batch_norm_eps'] = 1e-05
+config_cifar['batch_norm_decay'] = 0.9
+config_cifar['conv_filters_dim'] = 5
+
+config_cifar['e_pretrain'] = True
+config_cifar['e_pretrain_sample_size'] = 256
+config_cifar['e_noise'] = 'add_noise'
+config_cifar['e_num_filters'] = 1024
+config_cifar['e_num_layers'] = 4
+config_cifar['e_arch'] = 'dcgan' # mlp, dcgan, ali
+
+config_cifar['g_num_filters'] = 1024
+config_cifar['g_num_layers'] = 4
+config_cifar['g_arch'] = 'dcgan_mod' # mlp, dcgan, dcgan_mod, ali
+
+config_cifar['gan_p_trick'] = True
+config_cifar['d_num_layers'] = 4
+config_cifar['d_num_filters'] = 1024
+
+config_cifar['zdim'] = 64
+config_cifar['pz'] = 'normal' # uniform, normal, sphere
+config_cifar['cost'] = 'l2sq' #l2, l2sq, l1
+config_cifar['pz_scale'] = 1.
+config_cifar['z_test'] = 'mmd'
+config_cifar['mmd_kernel'] = 'IMQ' # RBF, IMQ
+config_cifar['lambda'] = 0.0
+config_cifar['lambda_schedule'] = 'constant'

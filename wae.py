@@ -40,6 +40,7 @@ class WAE(object):
 
         self.add_model_placeholders()
         self.add_training_placeholders()
+        self._data_augmentation()
         sample_size = tf.shape(self.sample_points)[0]
 
         # -- Transformation ops
@@ -118,6 +119,47 @@ class WAE(object):
         self.lr_decay = decay
         self.wae_lambda = wae_lambda
         self.is_training = is_training
+
+    def _data_augmentation(self):
+        if 'data_augm' not in opts:
+            return
+        elif opts['data_augm'] is False:
+            return
+        sample_points = self.sample_points
+        is_training = self.is_training
+
+        height = int(sample_points.get_shape()[1])
+        width = int(sample_points.get_shape()[2])
+        depth = int(sample_points.get_shape()[3])
+        # logging.error("real_points shape", real_points.get_shape())
+        def _distort_func(image):
+            # tf.image.per_image_standardization(image), should we?
+            # Pad with zeros.
+            image = tf.image.resize_image_with_crop_or_pad(
+                image, height+4, width+4)
+            image = tf.random_crop(image, [height, width, depth])
+            image = tf.image.random_flip_left_right(image)
+            image = tf.image.random_brightness(image, max_delta=0.1)
+            image = tf.minimum(tf.maximum(image, 0.0), 1.0)
+            image = tf.image.random_contrast(image, lower=0.8, upper=1.3)
+            image = tf.minimum(tf.maximum(image, 0.0), 1.0)
+            image = tf.image.random_hue(image, 0.08)
+            image = tf.minimum(tf.maximum(image, 0.0), 1.0)
+            image = tf.image.random_saturation(image, lower=0.8, upper=1.3)
+            image = tf.minimum(tf.maximum(image, 0.0), 1.0)
+            return image
+
+        def _regular_func(image):
+            return image
+
+        distorted_images = tf.cond(
+            is_training,
+            lambda: tf.map_fn(_distort_func, sample_points,
+                              parallel_iterations=100),
+            lambda: tf.map_fn(_regular_func, sample_points,
+                              parallel_iterations=100))
+
+        self.sample_points = distorted_images
 
     def pretrain_loss(self):
         opts = self.opts
