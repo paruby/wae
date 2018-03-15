@@ -132,7 +132,7 @@ config_celebA_small['print_every'] = 50
 config_celebA_small['lr_schedule'] = 'plateau'
 
 
-# dsprites config 
+# dsprites config
 config_dsprites = {}
 config_dsprites['dataset'] = 'dsprites'
 config_dsprites['verbose'] = True
@@ -183,7 +183,7 @@ config_dsprites['mmd_kernel'] = 'IMQ' # RBF, IMQ
 config_dsprites['lambda'] = 10.
 config_dsprites['lambda_schedule'] = 'constant'
 
-# grassli config 
+# grassli config
 
 config_grassli = {}
 config_grassli['dataset'] = 'grassli'
@@ -246,3 +246,11 @@ config_grassli_small['e_num_layers'] = 2
 config_grassli_small['e_num_filters'] = 64
 config_grassli_small['print_every'] = 50
 config_grassli_small['lr_schedule'] = 'plateau'
+
+
+
+# Paul smartcost celebA experiments
+config_celebA_ae_patch_var = copy.deepcopy(config_celebA)
+config_celebA_ae_patch_var['cost'] = [('patch_variances', 0.01), ('l2sq', 1.0)]
+config_celebA_ae_patch_var['cost_kernel_sizes'] = [3,4,5]
+config_celebA_ae_patch_var['lambda'] = 0.0

@@ -6,6 +6,7 @@ import configs
 from wae import WAE
 from datahandler import DataHandler
 import utils
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp", default='mnist_small',
@@ -29,6 +30,8 @@ parser.add_argument("--enc_noise",
                          " 'implicit': implicit encoder,"\
                          " 'add_noise': add noise before feeding "\
                          "to deterministic encoder")
+parser.add_argument("--cost",
+                    help='Smart costs (enter as dictionary of tuples)')
 
 FLAGS = parser.parse_args()
 
@@ -38,6 +41,8 @@ def main():
         opts = configs.config_celebA
     elif FLAGS.exp == 'celebA_small':
         opts = configs.config_celebA_small
+    elif FLAGS.exp == 'celebA_ae_patch_var':
+        opts = configs.config_celebA_ae_patch_var
     elif FLAGS.exp == 'mnist':
         opts = configs.config_mnist
     elif FLAGS.exp == 'mnist_small':
@@ -65,6 +70,8 @@ def main():
         opts['lambda'] = FLAGS.wae_lambda
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
+    if FLAGS.cost is not None:
+        opts['cost'] = json.loads(FLAGS.cost)
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')

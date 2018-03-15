@@ -38,7 +38,7 @@ def construct_cost(wae, opts, real, reconstr):
         if cost == 'patch_variances':
             loss += weight * _patch_variances(opts, real, reconst)
         if cost == 'l2sq':
-            loss += weight * _l2sq(opts, real, reconstr)
+            loss += 0.05 * weight * _l2sq(opts, real, reconstr) # magic number copied from l2sq loss in wae.py
         if cost == '_sylvain_recon_loss_using_disc_conv':
             adv_c_loss_w, emb_c_loss_w = weight
             adv_c_loss, emb_c_loss = _sylvain_recon_loss_using_disc_conv(opts, reconstr, real)
