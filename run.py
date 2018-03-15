@@ -96,6 +96,8 @@ def main():
             adv_c_w = FLAGS.sylvain_adv_c_w
             emb_c_w = FLAGS.sylvain_emb_c_w
             opts['cost'].append(('_sylvain_recon_loss_using_disc_conv', [adv_c_w, emb_c_w]))
+            opts['cross_p_w'] = 0
+            opts['diag_p_w'] = 0
         if FLAGS.adv_c_num_units is not None:
             opts['adv_c_num_units'] = FLAGS.adv_c_num_units
         if FLAGS.adv_c_patches_size is not None:
