@@ -254,3 +254,12 @@ config_celebA_ae_patch_var = copy.deepcopy(config_celebA)
 config_celebA_ae_patch_var['cost'] = [('patch_variances', 0.01), ('l2sq', 1.0)]
 config_celebA_ae_patch_var['cost_kernel_sizes'] = [3,4,5]
 config_celebA_ae_patch_var['lambda'] = 0.0
+
+# Paul smartcost celebA experiments
+config_celebA_sylvain_adv = copy.deepcopy(config_celebA)
+config_celebA_sylvain_adv['cost'] = [('_sylvain_recon_loss_using_disc_conv', [1.0, 1.0])]
+config_celebA_sylvain_adv['adv_c_num_units'] = 32
+config_celebA_sylvain_adv['adv_c_patches_size'] = 5
+config_celebA_sylvain_adv['g_num_filters'] = 2048
+config_celebA_sylvain_adv['z_dim'] = 100
+config_celebA_sylvain_adv['lambda'] = 0.0
