@@ -121,6 +121,7 @@ class WAE(object):
         self.is_training = is_training
 
     def _data_augmentation(self):
+        opts = self.opts
         if 'data_augm' not in opts:
             return
         elif opts['data_augm'] is False:
