@@ -274,8 +274,8 @@ config_cifar['verbose'] = True
 config_cifar['save_every_epoch'] = 20
 config_cifar['print_every'] = 500
 config_cifar['work_dir'] = 'experiments/results_cifar10'
-config_cifar['plot_num_pics'] = 30
-config_cifar['plot_num_cols'] = 5
+config_cifar['plot_num_pics'] = 120
+config_cifar['plot_num_cols'] = 10
 
 config_cifar['input_normalize_sym'] = True
 config_cifar['data_augm'] = True
@@ -302,7 +302,7 @@ config_cifar['e_num_filters'] = 1024
 config_cifar['e_num_layers'] = 4
 config_cifar['e_arch'] = 'dcgan' # mlp, dcgan, ali
 
-config_cifar['g_num_filters'] = 1024
+config_cifar['g_num_filters'] = 2048
 config_cifar['g_num_layers'] = 4
 config_cifar['g_arch'] = 'dcgan_mod' # mlp, dcgan, dcgan_mod, ali
 
@@ -310,7 +310,7 @@ config_cifar['gan_p_trick'] = True
 config_cifar['d_num_layers'] = 4
 config_cifar['d_num_filters'] = 1024
 
-config_cifar['zdim'] = 64
+config_cifar['zdim'] = 128
 config_cifar['pz'] = 'normal' # uniform, normal, sphere
 config_cifar['cost'] = 'l2sq' #l2, l2sq, l1
 config_cifar['pz_scale'] = 1.
