@@ -30,8 +30,12 @@ parser.add_argument("--enc_noise",
                          " 'implicit': implicit encoder,"\
                          " 'add_noise': add noise before feeding "\
                          "to deterministic encoder")
-parser.add_argument("--cost",
-                    help='Smart costs (enter as dictionary of tuples)')
+parser.add_argument("--smart_cost", type=bool,
+                    help='Use smart costs')
+parser.add_argument("--patch_var_w", type=float,
+                    help='weight of patch_var cost term')
+parser.add_argument("--l2sq_w", type=float,
+                    help='weight of l2sq cost term')
 
 FLAGS = parser.parse_args()
 
@@ -70,8 +74,12 @@ def main():
         opts['lambda'] = FLAGS.wae_lambda
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
-    if FLAGS.cost is not None:
-        opts['cost'] = json.loads(FLAGS.cost)
+    if FLAGS.smart_cost is True:
+        opts['cost'] = []
+        if FLAGS.patch_var_w is not None:
+            opts['cost'].append(('patch_variances', FLAGS.patch_var_w))
+        if FLAGS.l2sq_w is not None:
+            opts['cost'].append(('l2sq', FLAGS.l2sq_w))
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
