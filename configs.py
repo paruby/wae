@@ -279,7 +279,7 @@ config_cifar['plot_num_cols'] = 5
 
 config_cifar['input_normalize_sym'] = True
 config_cifar['data_augm'] = True
-config_cifar['data_dir'] = 'celebA/datasets/cifar10'
+config_cifar['data_dir'] = 'cifar10'
 
 config_cifar['optimizer'] = 'adam' # adam, sgd
 config_cifar['adam_beta1'] = 0.5
