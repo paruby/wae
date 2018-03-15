@@ -263,3 +263,5 @@ config_celebA_sylvain_adv['adv_c_patches_size'] = 5
 config_celebA_sylvain_adv['g_num_filters'] = 2048
 config_celebA_sylvain_adv['z_dim'] = 100
 config_celebA_sylvain_adv['lambda'] = 0.0
+config_celebA_sylvain_adv['diag_p_w'] = 0.0
+config_celebA_sylvain_adv['cross_p_w'] = 0.0
