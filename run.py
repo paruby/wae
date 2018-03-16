@@ -45,6 +45,11 @@ parser.add_argument("--adv_c_num_units", type=int,
 parser.add_argument("--adv_c_patches_size", type=int,
                     help='size of filters to use in adversarial cost')
 
+parser.add_argument("--e_num_filters", type=int,
+                    help='Number of filters to use in encoder')
+parser.add_argument("--g_num_filters", type=int,
+                    help='Number of filters to use in generator')
+
 FLAGS = parser.parse_args()
 
 def main():
@@ -86,6 +91,10 @@ def main():
         opts['lambda'] = FLAGS.wae_lambda
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
+    if FLAGS.e_num_filters is not None:
+        opts['e_num_filters'] = FLAGS.e_num_filters
+    if FLAGS.g_num_filters is not None:
+        opts['g_num_filters'] = FLAGS.g_num_filters
     if FLAGS.smart_cost is True:
         opts['cost'] = []
         if FLAGS.patch_var_w is not None:
