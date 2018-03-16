@@ -61,8 +61,10 @@ def _patch_variances(opts, real, reconstr):
     real_sq = real**2
     reconstr_sq = reconstr**2
     height, width, channels = [int(real.get_shape()[i]) for i in range(1,4)]
-
-    kernel_sizes = opts['cost_kernel_sizes']
+    if 'cost_kernel_sizes' in opts:
+        kernel_sizes = opts['cost_kernel_sizes']
+    else:
+        kernel_sizes = [3,4,5] #defaults
     if isinstance(kernel_sizes, int):
         kernel_sizes = [kernel_sizes]
     assert isinstance(kernel_sizes, list)
