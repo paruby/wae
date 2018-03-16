@@ -62,6 +62,8 @@ def main():
         opts = configs.config_celebA_ae_patch_var
     elif FLAGS.exp == 'celebA_sylvain_adv':
         opts = configs.config_celebA_sylvain_adv
+    elif FLAGS.exp == 'config_celebA_adv':
+        opts = configs.config_celebA_adv
     elif FLAGS.exp == 'mnist':
         opts = configs.config_mnist
     elif FLAGS.exp == 'mnist_small':

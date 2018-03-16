@@ -267,6 +267,14 @@ config_celebA_sylvain_adv['diag_p_w'] = 0.0
 config_celebA_sylvain_adv['cross_p_w'] = 0.0
 
 
+# Paul smartcost celebA experiments
+config_celebA_adv = copy.deepcopy(config_celebA)
+config_celebA_adv['cost'] = [('_sylvain_recon_loss_using_disc_conv', [1.0, 1.0])]
+config_celebA_adv['adv_c_num_units'] = 32
+config_celebA_adv['adv_c_patches_size'] = 5
+config_celebA_adv['diag_p_w'] = 0.0
+config_celebA_adv['cross_p_w'] = 0.0
+
 # cifar basic config
 config_cifar = {}
 config_cifar['dataset'] = 'cifar10'
