@@ -5,7 +5,7 @@ import copy
 config_celebA = {}
 config_celebA['dataset'] = 'celebA'
 config_celebA['verbose'] = True
-config_celebA['save_every_epoch'] = 20
+config_celebA['save_every_epoch'] = 5
 config_celebA['print_every'] = 500
 config_celebA['work_dir'] = 'results_celeba'
 config_celebA['plot_num_pics'] = 30
