@@ -49,6 +49,9 @@ parser.add_argument("--e_num_filters", type=int,
                     help='Number of filters to use in encoder')
 parser.add_argument("--g_num_filters", type=int,
                     help='Number of filters to use in generator')
+parser.add_argument("--adv_use_sq", type=bool,
+                    help='Whether to use square pixel values as inputs to adversarial cost')
+
 
 FLAGS = parser.parse_args()
 
@@ -113,6 +116,9 @@ def main():
             opts['adv_c_num_units'] = FLAGS.adv_c_num_units
         if FLAGS.adv_c_patches_size is not None:
             opts['adv_c_patches_size'] = FLAGS.adv_c_patches_size
+        if FLAGS.adv_use_sq is not None:
+            opts['adv_use_sq'] = FLAGS.adv_use_sq
+            
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
