@@ -70,7 +70,7 @@ def main():
                 fid_gen = float(lines[0].split('FID=')[1].split(',')[0])
                 fid_reconstr = float(lines[0].split('FID=')[2].split(',')[0])
                 logging.error('Model %s already processed' % chdir)
-                logging.error('FID=%f, computed using %d samples' % (fid, FLAGS.num_samples))
+#                logging.error('FID=%f, computed using %d samples' % (fid, FLAGS.num_samples))
                 models_fid[os.path.join(path, name)] = (fid_gen, fid_reconstr)
                 continue
             else:
