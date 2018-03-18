@@ -158,12 +158,13 @@ def _sylvain_recon_loss_using_disc_conv(opts, reconstructed_training, real_point
 
             return embedded_outputs, linear_outputs
 
-    if opts['adv_use_sq'] is True:
-        reconstructed_training_sq = reconstructed_training ** 2
-        real_points_sq = real_points ** 2
+    if 'adv_use_sq' in opts:
+        if opts['adv_use_sq'] is True:
+            reconstructed_training_sq = reconstructed_training ** 2
+            real_points_sq = real_points ** 2
 
-        reconstructed_training = tf.concat([reconstructed_training, reconstructed_training_sq], axis=-1)
-        real_points = tf.concat([real_points, real_points_sq], axis=-1)
+            reconstructed_training = tf.concat([reconstructed_training, reconstructed_training_sq], axis=-1)
+            real_points = tf.concat([real_points, real_points_sq], axis=-1)
 
     reconstructed_embed_sg, adv_fake_layer = _architecture(tf.stop_gradient(reconstructed_training), reuse=None)
     reconstructed_embed, _ = _architecture(reconstructed_training, reuse=True)
