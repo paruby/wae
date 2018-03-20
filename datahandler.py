@@ -206,8 +206,8 @@ class Data(object):
             top = (height - new_height) / 2
             right = (width + new_width) / 2
             bottom = (height + new_height)/2
-            random_v_shift = 60 * (np.random.rand() - 0.5)
-            random_h_shift = 60 * (np.random.rand() - 0.5)
+            random_v_shift = int(60 * (np.random.rand() - 0.5))
+            random_h_shift = int(60 * (np.random.rand() - 0.5))
 
             left, right = left - random_h_shift, right - random_h_shift
             top, bottom = top - random_v_shift, bottom - random_v_shift
