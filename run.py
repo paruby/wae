@@ -52,6 +52,9 @@ parser.add_argument("--g_num_filters", type=int,
 parser.add_argument("--adv_use_sq", type=bool,
                     help='Whether to use square pixel values as inputs to adversarial cost')
 
+parser.add_argument("--celebA_crop", type=str,
+                    help='Method of cropping / data preprocessing to apply to celebA dataset. closecrop/closecrop_randomshift/resizecrop')
+
 
 FLAGS = parser.parse_args()
 
@@ -94,6 +97,8 @@ def main():
         opts['work_dir'] = FLAGS.work_dir
     if FLAGS.wae_lambda is not None:
         opts['lambda'] = FLAGS.wae_lambda
+    if FLAGS.celebA_crop is not None:
+        opts['lambda'] = FLAGS.celebA_crop
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
     if FLAGS.e_num_filters is not None:
@@ -118,7 +123,7 @@ def main():
             opts['adv_c_patches_size'] = FLAGS.adv_c_patches_size
         if FLAGS.adv_use_sq is not None:
             opts['adv_use_sq'] = FLAGS.adv_use_sq
-            
+
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')

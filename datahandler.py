@@ -199,6 +199,22 @@ class Data(object):
             bottom = (height + new_height)/2
             im = im.crop((left, top, right, bottom))
             im = im.resize((64, 64), PIL.Image.ANTIALIAS)
+        elif self.crop_style == 'closecrop_randomshift':
+            # Close crop, but we shift each face randomly up/down and left/right
+            # so that faces are not centred
+            left = (width - new_width) / 2
+            top = (height - new_height) / 2
+            right = (width + new_width) / 2
+            bottom = (height + new_height)/2
+            random_v_shift = 60 * (np.random.rand() - 0.5)
+            random_h_shift = 60 * (np.random.rand() - 0.5)
+
+            left, right = left - random_h_shift, right - random_h_shift
+            top, bottom = top - random_v_shift, bottom - random_v_shift
+
+            im = im.crop((left, top, right, bottom))
+            im = im.resize((64, 64), PIL.Image.ANTIALIAS)
+
         elif self.crop_style == 'resizecrop':
             # This method was used in ALI, AGE, ...
             im = im.resize((64, 78), PIL.Image.ANTIALIAS)
