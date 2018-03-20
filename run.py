@@ -98,7 +98,7 @@ def main():
     if FLAGS.wae_lambda is not None:
         opts['lambda'] = FLAGS.wae_lambda
     if FLAGS.celebA_crop is not None:
-        opts['lambda'] = FLAGS.celebA_crop
+        opts['celebA_crop'] = FLAGS.celebA_crop
     if FLAGS.enc_noise is not None:
         opts['e_noise'] = FLAGS.enc_noise
     if FLAGS.e_num_filters is not None:
