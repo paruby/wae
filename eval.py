@@ -94,6 +94,8 @@ def main():
         opts = model_details(os.path.join(tup[0], 'params.txt'),
                              FLAGS.work_dir)
         dataset = opts['dataset']
+        if dataset == "celebA":
+            dataset = dataset + "_" + opts['celebA_crop']
         if dataset in datasets:
             continue
         datasets[dataset] = True

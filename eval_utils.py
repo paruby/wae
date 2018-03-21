@@ -31,9 +31,13 @@ def compute_metrics(tup, num_samples, work_dir, batch_size, recompute):
     opts = model_details(param_file, work_dir)
     # logging.error(opts)
     # 2. Loading pre-computed dataset FID stats
+    data_dir = opts['data_dir']
+    dataset = opts['dataset']
+    if dataset == "celebA":
+        dataset = dataset + "_" + opts['celebA_crop']
     stats = np.load(os.path.join(
-        opts['data_dir'],
-        opts['dataset'] + '.fidstats' + str(num_samples) + '.npz'))
+        data_dir,
+        dataset + '.fidstats' + str(num_samples) + '.npz'))
     data_mu, data_cov = stats['mu'], stats['cov']
     # 3. Generating model samples and auto-encoding training samples
     samples_path = os.path.join(
@@ -112,6 +116,8 @@ def model_details(param_filename, work_dir):
             zdim = int(line.split(' : ')[-1])
         if 'dataset :' in line:
             dataset = line.split(' : ')[-1][:-1]
+        if 'celebA_crop :' in line:
+            celebA_crop = line.split(' : ')[-1][:-1]
         if 'pz_scale :' in line:
             pz_scale = float(line.split(' : ')[-1])
         if 'pz :' in line:
@@ -126,6 +132,7 @@ def model_details(param_filename, work_dir):
     opts['pz'] = pz
     opts['zdim'] = zdim
     opts['pz_scale'] = pz_scale
+    opts['celebA_crop'] = celebA_crop
     if dataset == 'celebA':
         opts['data_dir'] = CELEBA_DIR
     elif dataset == 'cifar10':
