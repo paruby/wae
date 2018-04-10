@@ -1,4 +1,4 @@
-# Copyright 2017 Max Planck Society
+#i Copyright 2017 Max Planck Society
 # Distributed under the BSD-3 Software license,
 # (See accompanying file ./LICENSE.txt or copy at
 # https://opensource.org/licenses/BSD-3-Clause)
@@ -15,6 +15,7 @@ import tensorflow as tf
 import logging
 import ops
 import utils
+import costs
 from models import encoder, decoder, z_adversary
 from datahandler import datashapes
 import costs
@@ -38,7 +39,11 @@ class WAE(object):
 
         # -- Placeholders
 
-        self.add_model_placeholders()
+        if opts['mode'] == 'train':
+            self.add_inputs_placeholders()
+        elif opts['mode'] == 'test':
+            self.add_inputs_variables()
+
         self.add_training_placeholders()
         self._data_augmentation()
         sample_size = tf.shape(self.sample_points)[0]
@@ -82,9 +87,15 @@ class WAE(object):
         # -- Objectives, losses, penalties
 
         self.penalty, self.loss_gan = self.matching_penalty()
-        self.loss_reconstruct = self.reconstruction_loss()
+        self.loss_reconstruct = self.reconstruction_loss(self.sample_points,
+                                                         self.reconstructed)
         self.wae_objective = self.loss_reconstruct + \
                          self.wae_lambda * self.penalty
+
+        # Extra costs if any
+        if 'w_aef' in opts and opts['w_aef'] > 0:
+            costs.add_aefixedpoint_cost(opts, self)
+
         self.blurriness = self.compute_blurriness()
 
         if opts['e_pretrain']:
@@ -100,13 +111,35 @@ class WAE(object):
         self.add_savers()
         self.init = tf.global_variables_initializer()
 
-    def add_model_placeholders(self):
+    def add_inputs_placeholders(self):
+        # During training the inputs to encoder and decoder
+        # (i.e. pictures fed to encoder, Pz noise and encoded
+        # pictures, fed to decoder) are taken from the placeholder.
+        # Sometimes however we may want to tune those inputs while
+        # keeping the trained model fixed. Then we define inputs
+        # as tf variables (see add_inputs_placeholders below)
         opts = self.opts
         shape = self.data_shape
         data = tf.placeholder(
             tf.float32, [None] + shape, name='real_points_ph')
         noise = tf.placeholder(
             tf.float32, [None] + [opts['zdim']], name='noise_ph')
+
+        self.sample_points = data
+        self.sample_noise = noise
+
+    def add_inputs_variables(self):
+        opts = self.opts
+        shape = self.data_shape
+        with tf.variable_scope('inputs', reuse=False):
+            data = tf.get_variable(
+                'real_points_variable',
+                [1] + shape, tf.float32,
+                tf.random_normal_initializer(stddev=1e-03))
+            noise = tf.get_variable(
+                'noise_variable',
+                [1] + [opts['zdim']], tf.float32,
+                tf.random_normal_initializer(stddev=1.))
 
         self.sample_points = data
         self.sample_noise = noise
@@ -357,10 +390,10 @@ class WAE(object):
         loss_match = loss_Qz_trick
         return (loss_adversary, logits_Pz, logits_Qz), loss_match
 
-    def reconstruction_loss(self):
+    def reconstruction_loss(self, real, reconstr):
         opts = self.opts
-        real = self.sample_points
-        reconstr = self.reconstructed
+        # real = self.sample_points
+        # reconstr = self.reconstructed
         if opts['cost'] == 'l2':
             # c(x,y) = ||x - y||_2
             loss = tf.reduce_sum(tf.square(real - reconstr), axis=[1, 2, 3])
@@ -526,6 +559,32 @@ class WAE(object):
             logging.error('WARNING: possible bug in the worst 2d projection')
         return proj_mat, dot_prod
 
+    def test(self):
+        opts = self.opts
+        checkpoint = opts['checkpoint']
+        with self.sess.as_default(), self.sess.graph.as_default():
+            # We need to restore all variables except two new tf variables
+            # --- the ones replacing input placeholders in the new graph
+            all_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+            inputs_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='inputs')
+            vars_to_restore = [v for v in all_vars if v not in inputs_vars]
+            saver = tf.train.Saver(vars_to_restore)
+            saver.restore(self.sess, checkpoint)
+            init = tf.variables_initializer(inputs_vars)
+            init.run()
+            # getting references to some of the ops
+            is_training_ph = tf.get_collection('is_training_ph')[0]
+            decoder = tf.get_collection('decoder')[0]
+            encoder = tf.get_collection('encoder')[0]
+            encoder_A = tf.get_collection('encoder_A')
+            if len(encoder_A) > 0:
+                encoder_A = encoder_A[0]
+            else:
+                encoder_A = None
+            a = decoder.eval(feed_dict={is_training_ph: False})
+            print a.shape
+            print (a + 1.) / 2.
+
     def train(self, data):
         opts = self.opts
         if opts['verbose']:
@@ -553,6 +612,11 @@ class WAE(object):
         counter = 0
         decay = 1.
         wae_lambda = opts['lambda']
+        # Weights of the extra costs
+        extra_cost_weights = []
+        if 'w_aef' in opts and opts['w_aef'] > 0:
+            extra_cost_weights.append((self.w_aefixedpoint, opts['w_aef']))
+        # Variables for dynamic updates
         wait = 0
         wait_lambda = 0
 
@@ -603,16 +667,26 @@ class WAE(object):
 
                 # Update encoder and decoder
 
+                feed_d = {
+                    self.sample_points: batch_images,
+                    self.sample_noise: batch_noise,
+                    self.lr_decay: decay,
+                    self.wae_lambda: wae_lambda,
+                    self.is_training: True}
+
+                for (ph, val) in extra_cost_weights:
+                    feed_d[ph] = val
+
                 [_, loss, loss_rec, loss_match] = self.sess.run(
                     [self.ae_opt,
                      self.wae_objective,
                      self.loss_reconstruct,
                      self.penalty],
-                    feed_dict={self.sample_points: batch_images,
-                               self.sample_noise: batch_noise,
-                               self.lr_decay: decay,
-                               self.wae_lambda: wae_lambda,
-                               self.is_training: True})
+                    feed_dict=feed_d)
+
+                # grads = self.sess.run(self.grad_extra, feed_dict={self.sample_noise: batch_noise, self.is_training: True})
+                # for el in grads:
+                #    print  el
 
                 # Update the adversary in Z space for WAE-GAN
 
